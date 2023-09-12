@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:service_manager/bigButton.dart';
-import 'package:service_manager/databse.dart';
+import 'package:service_manager/database.dart';
 import 'package:service_manager/homePage.dart';
+import 'package:service_manager/loginPage.dart';
 import 'package:service_manager/style.dart';
 import 'package:service_manager/warningMessage.dart';
 
@@ -39,7 +40,7 @@ class _ChangePasswordState extends State<ChangePassword> {
           oldPasswordController.clear();
           newPasswordController.clear();
           confirmedPasswordController.clear();
-          Navigator.pushNamed(context, HomePage.id);
+          Navigator.pushNamed(context, LoginPage.id);
         } else {
           warning('bitte überprüfen Sie Ihre Eingaben', context);
           newPasswordController.clear();

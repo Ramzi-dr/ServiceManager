@@ -51,11 +51,9 @@ class DataBase {
   }
 
   deletefromList(String key, String itemToDelete) async {
-    print(key);
-    print(itemToDelete);
     List<String> myList = await getList(key);
     myList.remove(itemToDelete); // Delete the item
-    print(myList);
+
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(key, myList); // Save the updated list
   }

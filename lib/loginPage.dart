@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:service_manager/bigButton.dart';
-import 'package:service_manager/databse.dart';
+import 'package:service_manager/database.dart';
 import 'package:service_manager/homePage.dart';
 import 'package:service_manager/style.dart';
 import 'package:service_manager/warningMessage.dart';
@@ -69,7 +69,7 @@ class _LoginPageState extends State<LoginPage> {
                     controller: usernameController,
                     focusNode: focusNodeUsernameField,
                     textAlign: TextAlign.center,
-                    autofocus: false,
+                    autofocus: true,
                     onChanged: (value) {
                       username = value;
                     },

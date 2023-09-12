@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:service_manager/databse.dart';
+import 'package:service_manager/database.dart';
 import 'package:service_manager/serviceCreator.dart';
 import 'package:service_manager/showDialog.dart';
 import 'package:service_manager/style.dart';
+import 'package:service_manager/terminalCommand.dart';
 
 class ServiceListTitle extends StatefulWidget {
   const ServiceListTitle({
@@ -24,13 +25,11 @@ class _ServiceListTitleState extends State<ServiceListTitle> {
   final List<Color> _serviceColorList = [];
   void _toggleLeadingText(index) {
     setState(() {
-      print(_serviceColorList[index]);
       _leadingTextList[index] =
           (_leadingTextList[index] == '_Stop_') ? '_Start_' : '_Stop_';
       _serviceColorList[index] = (_serviceColorList[index] == _serviceColor)
           ? Style.notActiveServiceButtonColor
           : _serviceColor;
-      print(_serviceColorList[index]);
     });
   }
 
@@ -62,11 +61,9 @@ class _ServiceListTitleState extends State<ServiceListTitle> {
         return ListTile(
           title: GestureDetector(
             onLongPress: () {
-              print('long');
-              print(index);
               showMyDialog(
                   context,
-                  '${_myList[index]}',
+                  _myList[index],
                   'Are you sure to delete  service?',
                   '',
                   'delete service',
