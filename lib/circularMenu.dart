@@ -1,6 +1,6 @@
 import 'package:fab_circular_menu/fab_circular_menu.dart';
 import 'package:flutter/material.dart';
-import 'package:service_manager/addRemoteServer.dart';
+import 'package:service_manager/configServer.dart';
 import 'package:service_manager/changePassword.dart';
 import 'package:service_manager/createServiceStopStarter.dart';
 import 'package:service_manager/loginPage.dart';
@@ -47,7 +47,7 @@ class CircularmenuWidget extends StatelessWidget {
                 Navigator.pushNamed(context, AddRemoteServer.id);
               },
               icon: const Tooltip(
-                  message: 'Add remote server ', child: Icon(Icons.computer))),
+                  message: 'config server', child: Icon(Icons.computer))),
           IconButton(
               onPressed: () {
                 Navigator.pushNamed(context, CreateServiceStopStarter.id);

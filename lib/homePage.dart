@@ -1,6 +1,8 @@
 import 'package:fab_circular_menu/fab_circular_menu.dart';
 import 'package:flutter/material.dart';
 import 'package:service_manager/circularMenu.dart';
+import 'package:service_manager/database.dart';
+import 'package:service_manager/payloadCollection.dart';
 import 'package:service_manager/serviceCreator.dart';
 import 'package:service_manager/style.dart';
 
@@ -14,6 +16,54 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  Map serverWithServices = {};
+  List serversDetails = [];
+
+  @override
+  void initState() {
+    super.initState();
+    getServiceMap();
+  }
+
+  void getServiceMap() async {
+    Map originalMap = await DataBase()
+        .getServiceInfoMap(PayloadCollection.ServiceInfoMapName);
+    Map<String, List<String>> result = {};
+
+    originalMap.forEach((service, servers) {
+      if (servers is List) {
+        for (var server in servers) {
+          if (server is String) {
+            // Add the local server to the result
+            result.putIfAbsent(server, () => []).add(service);
+          } else if (server is Map) {
+            server.forEach((serverIp, _) {
+              result.putIfAbsent(serverIp, () => []).add(service);
+            });
+          }
+        }
+      }
+    });
+    List serverDetailsList = [];
+
+    originalMap.forEach((service, servers) {
+      if (servers is List) {
+        for (var server in servers) {
+          if (server is Map && !server.containsKey('localServer')) {
+            serverDetailsList.add(server);
+          }
+        }
+      }
+    });
+    setState(() {
+      serverWithServices = result;
+      serversDetails = serverDetailsList;
+    });
+    print('mapy $originalMap');
+    print(result);
+    print(serverDetailsList);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,6 +92,7 @@ class _HomePageState extends State<HomePage> {
                       backgroundColor: Style.lightButtonBackgroundColor),
                   child: const Text('Befehl'),
                   onPressed: () {
+                    getServiceMap();
                     ;
                   },
                 ),

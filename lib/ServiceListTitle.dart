@@ -41,7 +41,7 @@ class _ServiceListTitleState extends State<ServiceListTitle> {
   }
 
   Future<void> _loadListFromPrefs() async {
-    if (await DataBase().doesListExist('serviceList')) {
+    if (await DataBase().doesExist('serviceList')) {
       final myList = await DataBase().getList('serviceList');
       setState(() {
         _myList = myList;
@@ -67,7 +67,8 @@ class _ServiceListTitleState extends State<ServiceListTitle> {
                   'Are you sure to delete  service?',
                   '',
                   'delete service',
-                  'serviceList');
+                  'serviceList',
+                  null);
             },
             child: Text(
               _myList[index],

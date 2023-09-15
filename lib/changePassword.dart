@@ -36,7 +36,7 @@ class _ChangePasswordState extends State<ChangePassword> {
       var dataOldPass = await DataBase().getValue('password');
       if (oldPassword == dataOldPass) {
         if (newPassword == confirmedPassword) {
-          DataBase().update('password', newPassword);
+          DataBase().addKeyToSF('password', newPassword);
           oldPasswordController.clear();
           newPasswordController.clear();
           confirmedPasswordController.clear();

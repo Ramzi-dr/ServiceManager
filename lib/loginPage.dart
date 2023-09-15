@@ -27,6 +27,7 @@ class _LoginPageState extends State<LoginPage> {
     if (username.isEmpty || password.isEmpty) {
       warning('bitte überprüfen Sie Ihre Eingaben', context);
       passwordController.clear();
+      password = '';
     } else {
       DataBase().addKeyToSF('username', username);
 
@@ -38,6 +39,8 @@ class _LoginPageState extends State<LoginPage> {
       if (username == dataUsername && password == dataPassword) {
         usernameController.clear();
         passwordController.clear();
+        username = '';
+        password = '';
         Navigator.pushNamed(context, HomePage.id);
       } else {
         warning('Bitte gültiges Nutzername und Passwort eingeben!', context);

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:service_manager/createServiceStopStarter.dart';
 import 'package:service_manager/database.dart';
 import 'package:service_manager/homePage.dart';
+import 'package:service_manager/payloadCollection.dart';
 
 Future<void> showMyDialog(
-    context, title, text_1, text_2, confirmVoid, listName) async {
+    context, title, text_1, text_2, confirmVoid, listName, index) async {
   return showDialog<void>(
     context: context,
     barrierDismissible: true, // user must tap button!
@@ -38,15 +40,18 @@ Future<void> showMyDialog(
             onPressed: () {
               if (confirmVoid == 'delete service') {
                 deleteService(listName, title);
+                Navigator.pushNamed(context, HomePage.id);
+              } else if (confirmVoid == 'delete server') {
+                deleteServer(PayloadCollection.serverListName, index);
+
+                Navigator.pushNamed(context, CreateServiceStopStarter.id);
               }
-              ;
-              Navigator.pushNamed(context, HomePage.id);
             },
           ),
           TextButton(
             child: const Text('Exist'),
             onPressed: () {
-              Navigator.of(context).pop();
+              Navigator.pop(context);
             },
           ),
         ],
@@ -56,5 +61,11 @@ Future<void> showMyDialog(
 }
 
 deleteService(listName, serviceToDelete) async {
-  DataBase().deletefromList(listName, serviceToDelete);
+  DataBase().deleteFromList(listName, serviceToDelete);
+}
+
+deleteServer(serverListName, serverToDelete) async {
+  await DataBase()
+      .deleteServerInfoFromServerList(serverListName, serverToDelete);
+  await DataBase().getTheListOfServer(serverListName);
 }
