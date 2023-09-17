@@ -8,21 +8,19 @@ import 'package:service_manager/database.dart';
 import 'package:service_manager/homePage.dart';
 import 'package:service_manager/loginPage.dart';
 import 'package:window_manager/window_manager.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
   //SharedPreferences prefs = await SharedPreferences.getInstance();
-  // prefs.clear();
-  // ignore: invalid_use_of_visible_for_testing_
+  //prefs.clear();
   WidgetsFlutterBinding.ensureInitialized();
   final database = DataBase();
   await database.init();
   await windowManager.ensureInitialized();
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-    WindowManager.instance.setMinimumSize(const Size(400, 800));
-    WindowManager.instance.setMaximumSize(const Size(400, 900));
+    WindowManager.instance.setMinimumSize(const Size(800, 800));
+    WindowManager.instance.setMaximumSize(const Size(800, 900));
   }
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {

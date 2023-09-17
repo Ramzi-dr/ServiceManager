@@ -5,7 +5,8 @@ import 'package:service_manager/homePage.dart';
 import 'package:service_manager/payloadCollection.dart';
 
 Future<void> showMyDialog(
-    context, title, text_1, text_2, confirmVoid, listName, index) async {
+    context, title, text_1, text_2, confirmVoid, listName, index,
+    [serverInfo]) async {
   return showDialog<void>(
     context: context,
     barrierDismissible: true, // user must tap button!
@@ -42,7 +43,8 @@ Future<void> showMyDialog(
                 deleteService(listName, title);
                 Navigator.pushNamed(context, HomePage.id);
               } else if (confirmVoid == 'delete server') {
-                deleteServer(PayloadCollection.serverListName, index);
+                deleteServer(
+                    PayloadCollection.serverListName, index, serverInfo);
 
                 Navigator.pushNamed(context, CreateServiceStopStarter.id);
               }
@@ -64,8 +66,22 @@ deleteService(listName, serviceToDelete) async {
   DataBase().deleteFromList(listName, serviceToDelete);
 }
 
-deleteServer(serverListName, serverToDelete) async {
-  await DataBase()
-      .deleteServerInfoFromServerList(serverListName, serverToDelete);
-  await DataBase().getTheListOfServer(serverListName);
+deleteServer(serverListName, serverIndex, [serverInfo]) async {
+  String serverIp = '';
+  serverInfo.forEach((key, value) {
+    serverIp = key;
+  });
+  var serviceInfoMap =
+      await DataBase().getServiceInfoMap(PayloadCollection.serviceInfoMapName);
+  print(serviceInfoMap);
+  serviceInfoMap.forEach((key, value) {
+    value[0].forEach((serviceKey, serverValue) async {
+      if (serviceKey == serverIp) {
+        await DataBase()
+            .updateServiceInfoMap(PayloadCollection.serviceInfoMapName, key);
+      }
+    });
+  });
+
+  await DataBase().deleteServerInfoFromServerList(serverListName, serverIndex);
 }

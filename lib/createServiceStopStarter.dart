@@ -1,16 +1,10 @@
-// ignore_for_file: unrelated_type_equality_checks
-
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:service_manager/bigButton.dart';
 import 'package:service_manager/database.dart';
 import 'package:service_manager/homePage.dart';
-import 'package:service_manager/localServerBuilder.dart';
 import 'package:service_manager/payloadCollection.dart';
 import 'package:service_manager/showDialog.dart';
 import 'package:service_manager/style.dart';
-import 'package:service_manager/terminalCommand.dart';
 import 'package:service_manager/warningMessage.dart';
 
 class CreateServiceStopStarter extends StatefulWidget {
@@ -41,10 +35,6 @@ class _CreateServiceStopStarterState extends State<CreateServiceStopStarter> {
   List checkedServiceList = [];
   List myServerIpPortSudo = [];
   final Map<String, List> serviceInfoMap = {};
-
-  void convertServiceInfoMap(serviceInfoMap) {
-    print(serviceInfoMap);
-  }
 
   void _toggleRemoteServerCheckBox(index) {
     setState(() {
@@ -98,10 +88,10 @@ class _CreateServiceStopStarterState extends State<CreateServiceStopStarter> {
       warning('Please you must choose at least one server!', context);
     } else if (serviceName.isEmpty) {
       warning('Service name is missing!', context);
-    } else if (checkedServiceList.isNotEmpty || serviceName.isNotEmpty) {
+    } else if (checkedServiceList.isNotEmpty && serviceName.isNotEmpty) {
       serviceInfoMap[serviceName] = checkedServiceList;
       await DataBase().saveServiceInfoMap(
-          PayloadCollection.ServiceInfoMapName, serviceInfoMap);
+          PayloadCollection.serviceInfoMapName, serviceInfoMap);
 
       Navigator.pushNamed(context, HomePage.id);
     }
@@ -134,15 +124,18 @@ class _CreateServiceStopStarterState extends State<CreateServiceStopStarter> {
               ),
               const Text('Please enter service name'),
               Padding(
-                padding: const EdgeInsets.all(10),
-                child: TextField(
-                  controller: serviceNameController,
-                  focusNode: focusNodeServiceName,
-                  textAlign: TextAlign.center,
-                  autofocus: true,
-                  onChanged: (value) {
-                    serviceName = value;
-                  },
+                padding: const EdgeInsets.only(top: 10, bottom: 10),
+                child: Container(
+                  color: const Color.fromARGB(85, 24, 184, 233),
+                  child: TextField(
+                    controller: serviceNameController,
+                    focusNode: focusNodeServiceName,
+                    textAlign: TextAlign.center,
+                    autofocus: true,
+                    onChanged: (value) {
+                      serviceName = value;
+                    },
+                  ),
                 ),
               ),
               const SizedBox(
@@ -185,7 +178,8 @@ class _CreateServiceStopStarterState extends State<CreateServiceStopStarter> {
                           '',
                           'delete server',
                           'serviceList',
-                          index);
+                          index,
+                          myServerListMap[index]);
                     },
                     child: CheckboxListTile(
                       // tileColor: const Color.fromARGB(

@@ -26,7 +26,6 @@ class _LocalServerCheckboxState extends State<LocalServerCheckbox> {
         value: _value,
         onChanged: (bool? value) {
           _toggleCheckBox();
-          print(value);
         });
   }
 }

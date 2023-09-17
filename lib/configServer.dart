@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:service_manager/bigButton.dart';
+import 'package:service_manager/createServiceStopStarter.dart';
 import 'package:service_manager/database.dart';
 import 'package:service_manager/homePage.dart';
 import 'package:service_manager/payloadCollection.dart';
@@ -49,8 +50,9 @@ class _AddRemoteServerState extends State<AddRemoteServer> {
       // ignore: use_build_context_synchronously
       warning('Please check the server ip and ssh port!', context);
       clearEntry();
-    } else if (serverIp.isNotEmpty && sshPort.isNotEmpty) {
-      print('remote');
+    } else if (serverIp.isNotEmpty &&
+        sshPort.isNotEmpty &&
+        sudoPassword.isNotEmpty) {
       final serverListExist =
           await DataBase().doesExist(PayloadCollection.serverListName);
       List<String> serverInfoList = [serverIp, sshPort, sudoPassword];
@@ -60,19 +62,21 @@ class _AddRemoteServerState extends State<AddRemoteServer> {
         await DataBase().appendServerInfoToServerList(
             PayloadCollection.serverListName, serverInfoList);
         clearEntry();
+        Navigator.pushNamed(context, CreateServiceStopStarter.id);
       } else if (serverListExist) {
         await DataBase().appendServerInfoToServerList(
             PayloadCollection.serverListName, serverInfoList);
         clearEntry();
+        Navigator.pushNamed(context, CreateServiceStopStarter.id);
       }
       final serverList =
           await DataBase().getTheListOfServer(PayloadCollection.serverListName);
-      
+
       clearEntry();
-    } else if (sudoPassword.isNotEmpty || serverIp.isEmpty || sshPort.isEmpty) {
-      print('local server');
+    } else if (sudoPassword.isNotEmpty && serverIp.isEmpty && sshPort.isEmpty) {
       await DataBase().addKeyToSF(PayloadCollection.localSudo, sudoPassword);
       clearEntry();
+      Navigator.pushNamed(context, HomePage.id);
     }
   }
 
@@ -102,7 +106,7 @@ class _AddRemoteServerState extends State<AddRemoteServer> {
       appBar: AppBar(
         centerTitle: true,
         automaticallyImplyLeading: false,
-        title: const Text('server configuration'),
+        title: const Text('Server configuration'),
       ),
       body: Center(
         child: SingleChildScrollView(

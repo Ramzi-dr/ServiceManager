@@ -17,14 +17,17 @@ class DataBase {
   Future init() async {
     prefs = await SharedPreferences.getInstance();
   }
+  Future clearDatabase()async{
+    prefs.clear();
+  }
 
-  addKeyToSF(key, value) async {
+  Future addKeyToSF(key, value) async {
     if (await getValue(key) == '') {
       prefs.setString(key, value);
     }
   }
 
-  getValue(key) async {
+  Future getValue(key) async {
     var existValue = prefs.getString(key);
     return existValue;
   }
@@ -83,11 +86,47 @@ class DataBase {
 
   Future appendServerInfoToServerList(key, List serverInfoList) async {
     List<String> myList = await getList(key);
-    myList.add(json.encode(serverInfoList));
+
+    // Convert myList items to lists
+    List<List<dynamic>> decodedMyList = [];
+
+    for (String item in myList) {
+      List<dynamic> decodedItem = json.decode(item);
+      decodedMyList.add(decodedItem);
+    }
+
+    // Check if serverInfoList[0] matches the first element of any item in decodedMyList
+    bool exists = false;
+    int indexToUpdate = -1;
+
+    for (int i = 0; i < decodedMyList.length; i++) {
+      List<dynamic> decodedItem = decodedMyList[i];
+      if (decodedItem.isNotEmpty && decodedItem[0] == serverInfoList[0]) {
+        exists = true;
+        indexToUpdate = i;
+        break;
+      }
+    }
+
+    String encodedServerInfoList = json.encode(serverInfoList);
+
+    if (exists) {
+      // Replace the existing item in decodedMyList
+      decodedMyList[indexToUpdate] = serverInfoList;
+
+      // Encode and update myList
+      myList[indexToUpdate] = json.encode(serverInfoList);
+    } else {
+      // Append it to decodedMyList
+      decodedMyList.add(serverInfoList);
+
+      // Encode and append to myList
+      myList.add(encodedServerInfoList);
+    }
+
     await prefs.setStringList(key, myList);
   }
 
-// Append an item to the list and save it back to shared_preferences
   Future appendToList(String key, String newItem) async {
     List<String> myList = await getList(key);
     myList.add(newItem); // Append the item
@@ -100,20 +139,60 @@ class DataBase {
     await prefs.setStringList(key, myList); // Save the updated list
   }
 
-  Future saveServiceInfoMap(
-      String mapToAdd, Map<String, dynamic> serviceInfoMap) async {
+Future saveServiceInfoMap(
+  String serviceMap, Map<String, dynamic> serviceInfoMap) async {
+  // Retrieve the existing data
+  String? jsonExistingServiceInfo = prefs.getString(serviceMap);
+  Map<String, dynamic> existingServiceInfo = jsonExistingServiceInfo != null
+      ? jsonDecode(jsonExistingServiceInfo)
+      : {};
+
+  // Loop through the provided serviceInfoMap
+  serviceInfoMap.forEach((serviceName, serviceNewValue) {
+    if (!existingServiceInfo.containsKey(serviceName)) {
+      // If serviceName is not in existingServiceInfo, add it with the new value
+      existingServiceInfo[serviceName] = serviceNewValue;
+    } else {
+      // If serviceName is in existingServiceInfo, update the existing list
+      List serviceOldValue = existingServiceInfo[serviceName];
+      bool isDuplicate = false;
+
+      // Check if serviceNewValue already exists in the list
+      for (var item in serviceOldValue) {
+        if (item.runtimeType == serviceNewValue.runtimeType &&
+            item.toString() == serviceNewValue.toString()) {
+          isDuplicate = true;
+          break;
+        }
+      }
+
+      if (!isDuplicate) {
+        // If not a duplicate, add it to the list
+        serviceOldValue.add(serviceNewValue);
+        existingServiceInfo[serviceName] = serviceOldValue;
+      }
+    }
+  });
+
+  // Encode and save the updated existingServiceInfo
+  String jsonMergedServiceInfo = jsonEncode(existingServiceInfo);
+  await prefs.setString(serviceMap, jsonMergedServiceInfo);
+}
+
+
+  Future updateServiceInfoMap(String serviceMap, String serviceInfoMap) async {
     // Retrieve the existing data
-    String? jsonExistingServiceInfo = prefs.getString(mapToAdd);
+    String? jsonExistingServiceInfo = prefs.getString(serviceMap);
     Map<String, dynamic> existingServiceInfo = jsonExistingServiceInfo != null
         ? jsonDecode(jsonExistingServiceInfo)
         : {};
-
-    // Merge the existing data with the new data
-    existingServiceInfo.addAll(serviceInfoMap);
+    //delete key value
+    existingServiceInfo.remove(serviceInfoMap);
+    // existingServiceInfo.remove(serviceInfoMap);
 
     // Convert the merged map to a JSON string and save it
     String jsonMergedServiceInfo = jsonEncode(existingServiceInfo);
-    await prefs.setString(mapToAdd, jsonMergedServiceInfo);
+    await prefs.setString(serviceMap, jsonMergedServiceInfo);
   }
 
   Future<Map<String, dynamic>> getServiceInfoMap(mapToGet) async {
