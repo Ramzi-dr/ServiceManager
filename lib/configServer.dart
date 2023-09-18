@@ -41,7 +41,6 @@ class _AddRemoteServerState extends State<AddRemoteServer> {
   }
 
   createButtonPressed() async {
-    await DataBase().removeKey(serverIp);
     if (sudoPassword.isEmpty) {
       warning('Please enter sudo password', context);
       clearEntry();
@@ -54,6 +53,7 @@ class _AddRemoteServerState extends State<AddRemoteServer> {
         sshPort.isNotEmpty &&
         sudoPassword.isNotEmpty) {
       DataBase().updateServerList(serverIp, sshPort, sudoPassword);
+      clearEntry();
     } else if (sudoPassword.isNotEmpty && serverIp.isEmpty && sshPort.isEmpty) {
       DataBase().updateServerList('localServer', 'none', sudoPassword);
       clearEntry();

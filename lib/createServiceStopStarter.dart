@@ -189,16 +189,12 @@ class _CreateServiceStopStarterState extends State<CreateServiceStopStarter> {
                 itemCount: myServerListMap.length, //_myServerList.length,
                 itemBuilder: (context, index) {
                   return GestureDetector(
-                    onLongPress: () {
-                      showMyDialog(
-                          context,
-                          myServerListMap[index].toString(),
-                          'Are you sure to delete  server from list?',
-                          '',
-                          'delete server',
-                          'serviceList',
-                          index,
-                          myServerListMap[index]);
+                    onLongPress: ()async {
+                       await showMyDialog(context,
+                            'This will delete the Server: ', 'delete server', [
+                          _myServerList[index],
+                          _myServerList[index]
+                        ]);
                     },
                     child: CheckboxListTile(
                       // tileColor: const Color.fromARGB(

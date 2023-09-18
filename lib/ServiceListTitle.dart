@@ -56,7 +56,6 @@ class _ServiceListTitleState extends State<ServiceListTitle> {
     Map _buttonColor = {};
     Map _buttonText = {};
     Map _serviceStateColor = {};
-    print(serverList);
     for (var server in serverList) {
       if (server['services']!.isNotEmpty) {
         final List services = server['services'];
@@ -94,7 +93,16 @@ class _ServiceListTitleState extends State<ServiceListTitle> {
               ListTile(
                 title: ElevatedButton(
                     child: Text(serversWithServices[index]['ipAddress']),
-                    onPressed: () {}),
+                    onPressed: () async {
+                      if (serversWithServices[index]['ipAddress'] !=
+                          'localServer') {
+                        await showMyDialog(context,
+                            'This will delete the Server: ', 'delete server', [
+                          serversWithServices[index]['ipAddress'],
+                          serversWithServices[index]['ipAddress']
+                        ]);
+                      }
+                    }),
               ),
               Container(
                   color: const Color.fromARGB(175, 88, 130, 150),
@@ -115,14 +123,11 @@ class _ServiceListTitleState extends State<ServiceListTitle> {
         return ListTile(
           title: GestureDetector(
             onLongPress: () async {
-              // await showMyDialog(
-              //   context,
-              //   'services[index].toString()',
-              //   'Are you sure to delete  service?',
-              //   '',
-              //   'delete service',
-              //   'serviceList',
-              // );
+              await showMyDialog(
+                  context, 'This will delete:  ', 'deleteServiceFromServer', [
+                serversWithServices[serverIndex]['ipAddress'],
+                serversWithServices[serverIndex]['services'][index]
+              ]);
             },
             child: Text(
               serversWithServices[serverIndex]['services'][index],

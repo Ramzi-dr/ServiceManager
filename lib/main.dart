@@ -34,9 +34,9 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(),
       initialRoute: 'HomePage',
       routes: {
-        LoginPage.id: (_) => LoginPage(),
+       // LoginPage.id: (_) => LoginPage(),
         HomePage.id: (_) => HomePage(),
-        ChangePassword.id: (_) => const ChangePassword(),
+       // ChangePassword.id: (_) => const ChangePassword(),
         CreateServiceStopStarter.id: (_) => const CreateServiceStopStarter(),
         AddRemoteServer.id: (_) => const AddRemoteServer(),
       },
