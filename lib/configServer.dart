@@ -53,28 +53,9 @@ class _AddRemoteServerState extends State<AddRemoteServer> {
     } else if (serverIp.isNotEmpty &&
         sshPort.isNotEmpty &&
         sudoPassword.isNotEmpty) {
-      final serverListExist =
-          await DataBase().doesExist(PayloadCollection.serverListName);
-      List<String> serverInfoList = [serverIp, sshPort, sudoPassword];
-
-      if (!serverListExist) {
-        await DataBase().saveList(PayloadCollection.serverListName, []);
-        await DataBase().appendServerInfoToServerList(
-            PayloadCollection.serverListName, serverInfoList);
-        clearEntry();
-        Navigator.pushNamed(context, CreateServiceStopStarter.id);
-      } else if (serverListExist) {
-        await DataBase().appendServerInfoToServerList(
-            PayloadCollection.serverListName, serverInfoList);
-        clearEntry();
-        Navigator.pushNamed(context, CreateServiceStopStarter.id);
-      }
-      final serverList =
-          await DataBase().getTheListOfServer(PayloadCollection.serverListName);
-
-      clearEntry();
+      DataBase().updateServerList(serverIp, sshPort, sudoPassword);
     } else if (sudoPassword.isNotEmpty && serverIp.isEmpty && sshPort.isEmpty) {
-      await DataBase().addKeyToSF(PayloadCollection.localSudo, sudoPassword);
+      DataBase().updateServerList('localServer', 'none', sudoPassword);
       clearEntry();
       Navigator.pushNamed(context, HomePage.id);
     }

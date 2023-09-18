@@ -25,8 +25,8 @@ void checkAndDeleteData(context) {
   }
 }
 
-class CircularmenuWidget extends StatelessWidget {
-  const CircularmenuWidget({
+class CircularMenuWidget extends StatelessWidget {
+  const CircularMenuWidget({
     Key? key,
     required this.fabKey,
   }) : super(key: key);
@@ -68,7 +68,7 @@ class CircularmenuWidget extends StatelessWidget {
                         style: TextStyle(
                             color: Colors.red, fontWeight: FontWeight.bold),
                         "!!this will remove the entire database application!!"),
-                    content:const SizedBox(
+                    content: const SizedBox(
                       height: 30,
                       child: Center(child: Text('Type DELETEdata to confirm')),
                     ),
@@ -81,8 +81,9 @@ class CircularmenuWidget extends StatelessWidget {
                               SizedBox(
                                 width: 300,
                                 child: Container(
-                                  color:const Color.fromARGB(80, 182, 72, 72),
-                                  child: TextField(enableSuggestions: false,
+                                  color: const Color.fromARGB(80, 182, 72, 72),
+                                  child: TextField(
+                                    enableSuggestions: false,
                                     controller: inputController,
                                     focusNode: inputFocusNode,
                                     onChanged: (value) {

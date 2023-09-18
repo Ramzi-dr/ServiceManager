@@ -32,8 +32,8 @@ class _CreateServiceStopStarterState extends State<CreateServiceStopStarter> {
   bool startRemoteServerCheckBoxValue = false;
   List<dynamic> myServerListMap = [];
   List<dynamic> checkBoxList = [];
-  List checkedServiceList = [];
-  List myServerIpPortSudo = [];
+  List<String> checkedServiceList = [];
+  final List _myServerList = [];
   final Map<String, List> serviceInfoMap = {};
 
   void _toggleRemoteServerCheckBox(index) {
@@ -52,31 +52,32 @@ class _CreateServiceStopStarterState extends State<CreateServiceStopStarter> {
   void initState() {
     super.initState();
     // Retrieve the list from shared_preferences when the widget is initialized.
-    _loadMapFromPrefs();
+    _loadServerListFromPrefs();
   }
 
   void performInitialization() {
-    _loadMapFromPrefs();
+    _loadServerListFromPrefs();
   }
 
-  Future<void> _loadMapFromPrefs() async {
-    if (await DataBase().doesExist(PayloadCollection.serverListName)) {
-      List serverList =
-          await DataBase().getTheListOfServer(PayloadCollection.serverListName);
+  Future<void> _loadServerListFromPrefs() async {
+    final serverList = await DataBase().getServerList();
+    if (serverList.isNotEmpty) {
       setState(() {
         for (var _ in serverList) {
-          final Map<String, dynamic> serverIpAndPort = {_[0]: _[1]};
-          final Map<String, dynamic> serverPortSudo = {_[1]: _[2]};
-          final Map<String, dynamic> serverIpPortSudo = {_[0]: serverPortSudo};
-          myServerIpPortSudo.add(serverIpPortSudo);
-          myServerListMap.add(serverIpAndPort);
-          checkBoxList.add(startRemoteServerCheckBoxValue);
-          selectedColorList.add(selectedColor);
+          if (_["ipAddress"] != 'localServer') {
+            final Map<String, dynamic> serverIpAndPort = {
+              _['ipAddress']: _['port']
+            };
+            myServerListMap.add(serverIpAndPort);
+            _myServerList.add(_['ipAddress']);
+            checkBoxList.add(startRemoteServerCheckBoxValue);
+            selectedColorList.add(selectedColor);
+          }
         }
-        ;
       });
     }
   }
+
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   var focusNodeServiceName = FocusNode();
@@ -89,11 +90,29 @@ class _CreateServiceStopStarterState extends State<CreateServiceStopStarter> {
     } else if (serviceName.isEmpty) {
       warning('Service name is missing!', context);
     } else if (checkedServiceList.isNotEmpty && serviceName.isNotEmpty) {
-      serviceInfoMap[serviceName] = checkedServiceList;
-      await DataBase().saveServiceInfoMap(
-          PayloadCollection.serviceInfoMapName, serviceInfoMap);
+      print(checkedServiceList);
+      if (checkedServiceList.contains('localServer')) {
+        bool localServerExist =
+            await DataBase().checkIfServerExist('localServer');
+        if (!localServerExist) {
+          await DataBase().updateServerList('localServer', '', '');
+          warning('please configure the local server Password first', context);
+        } else if (localServerExist) {
+          final passwordExist =
+              await DataBase().getPasswordByServerIp('localServer');
+          if (passwordExist!.isNotEmpty) {
+            await DataBase().updateServiceList(checkedServiceList, serviceName);
+            Navigator.pushNamed(context, HomePage.id);
+          } else if (passwordExist.isEmpty) {
+            warning(
+                'please configure the local server Password first', context);
+          }
+        }
+      } else {
+        await DataBase().updateServiceList(checkedServiceList, serviceName);
 
-      Navigator.pushNamed(context, HomePage.id);
+        Navigator.pushNamed(context, HomePage.id);
+      }
     }
   }
 
@@ -189,9 +208,9 @@ class _CreateServiceStopStarterState extends State<CreateServiceStopStarter> {
                       onChanged: (bool? value) {
                         _toggleRemoteServerCheckBox(index);
                         if (value!) {
-                          checkedServiceList.add(myServerIpPortSudo[index]);
+                          checkedServiceList.add(_myServerList[index]);
                         } else if (!value) {
-                          checkedServiceList.remove(myServerIpPortSudo[index]);
+                          checkedServiceList.remove(_myServerList[index]);
                         }
                       },
                     ),

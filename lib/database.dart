@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
@@ -17,7 +19,8 @@ class DataBase {
   Future init() async {
     prefs = await SharedPreferences.getInstance();
   }
-  Future clearDatabase()async{
+
+  Future clearDatabase() async {
     prefs.clear();
   }
 
@@ -86,12 +89,14 @@ class DataBase {
 
   Future appendServerInfoToServerList(key, List serverInfoList) async {
     List<String> myList = await getList(key);
+    print(myList);
 
     // Convert myList items to lists
     List<List<dynamic>> decodedMyList = [];
 
     for (String item in myList) {
       List<dynamic> decodedItem = json.decode(item);
+
       decodedMyList.add(decodedItem);
     }
 
@@ -139,58 +144,42 @@ class DataBase {
     await prefs.setStringList(key, myList); // Save the updated list
   }
 
-Future saveServiceInfoMap(
-  String serviceMap, Map<String, dynamic> serviceInfoMap) async {
-  // Retrieve the existing data
-  String? jsonExistingServiceInfo = prefs.getString(serviceMap);
-  Map<String, dynamic> existingServiceInfo = jsonExistingServiceInfo != null
-      ? jsonDecode(jsonExistingServiceInfo)
-      : {};
-
-  // Loop through the provided serviceInfoMap
-  serviceInfoMap.forEach((serviceName, serviceNewValue) {
-    if (!existingServiceInfo.containsKey(serviceName)) {
-      // If serviceName is not in existingServiceInfo, add it with the new value
-      existingServiceInfo[serviceName] = serviceNewValue;
-    } else {
-      // If serviceName is in existingServiceInfo, update the existing list
-      List serviceOldValue = existingServiceInfo[serviceName];
-      bool isDuplicate = false;
-
-      // Check if serviceNewValue already exists in the list
-      for (var item in serviceOldValue) {
-        if (item.runtimeType == serviceNewValue.runtimeType &&
-            item.toString() == serviceNewValue.toString()) {
-          isDuplicate = true;
-          break;
-        }
-      }
-
-      if (!isDuplicate) {
-        // If not a duplicate, add it to the list
-        serviceOldValue.add(serviceNewValue);
-        existingServiceInfo[serviceName] = serviceOldValue;
-      }
-    }
-  });
-
-  // Encode and save the updated existingServiceInfo
-  String jsonMergedServiceInfo = jsonEncode(existingServiceInfo);
-  await prefs.setString(serviceMap, jsonMergedServiceInfo);
-}
-
-
-  Future updateServiceInfoMap(String serviceMap, String serviceInfoMap) async {
+  Future saveServiceInfoMap(
+      String serviceMap, Map<String, dynamic> serviceInfoMap) async {
     // Retrieve the existing data
     String? jsonExistingServiceInfo = prefs.getString(serviceMap);
     Map<String, dynamic> existingServiceInfo = jsonExistingServiceInfo != null
         ? jsonDecode(jsonExistingServiceInfo)
         : {};
-    //delete key value
-    existingServiceInfo.remove(serviceInfoMap);
-    // existingServiceInfo.remove(serviceInfoMap);
 
-    // Convert the merged map to a JSON string and save it
+    // Loop through the provided serviceInfoMap
+    serviceInfoMap.forEach((serviceName, serviceNewValue) {
+      if (!existingServiceInfo.containsKey(serviceName)) {
+        // If serviceName is not in existingServiceInfo, add it with the new value
+        existingServiceInfo[serviceName] = serviceNewValue;
+      } else {
+        // If serviceName is in existingServiceInfo, update the existing list
+        List serviceOldValue = existingServiceInfo[serviceName];
+        bool isDuplicate = false;
+
+        // Check if serviceNewValue already exists in the list
+        for (var item in serviceOldValue) {
+          if (item.runtimeType == serviceNewValue.runtimeType &&
+              item.toString() == serviceNewValue.toString()) {
+            isDuplicate = true;
+            break;
+          }
+        }
+
+        if (!isDuplicate) {
+          // If not a duplicate, add it to the list
+          serviceOldValue.add(serviceNewValue);
+          existingServiceInfo[serviceName] = serviceOldValue;
+        }
+      }
+    });
+
+    // Encode and save the updated existingServiceInfo
     String jsonMergedServiceInfo = jsonEncode(existingServiceInfo);
     await prefs.setString(serviceMap, jsonMergedServiceInfo);
   }
@@ -210,6 +199,151 @@ Future saveServiceInfoMap(
     } else {
       // Handle the case where the JSON string is null (not found)
       return {}; // or any other appropriate default value
+    }
+  }
+/////////////////////////////////////////new ToTry ///////////////////////////////////////////7
+  ///
+
+  Future<void> deleteServiceInfoForKey(
+    String serviceMap,
+    String keyToDelete,
+  ) async {
+    String? jsonExistingServiceInfo = prefs.getString(serviceMap);
+
+    if (jsonExistingServiceInfo == null) {
+      return; // Nothing to delete if the map doesn't exist
+    }
+
+    Map<String, dynamic> existingServiceInfo =
+        jsonDecode(jsonExistingServiceInfo);
+
+    // Loop through the serviceInfoMap and remove the specified key from all maps
+    existingServiceInfo.forEach((serviceName, serviceValue) {
+      if (serviceValue is List) {
+        for (int i = 0; i < serviceValue.length; i++) {
+          if (serviceValue[i] is Map &&
+              serviceValue[i].containsKey(keyToDelete)) {
+            serviceValue.removeAt(i);
+            i--; // Adjust the index since we removed an item
+          }
+        }
+      }
+    });
+
+    // Encode and save the updated existingServiceInfo
+    String jsonMergedServiceInfo = jsonEncode(existingServiceInfo);
+    await prefs.setString(serviceMap, jsonMergedServiceInfo);
+  }
+
+//////////////////////////last to test ////////////////////////////////////////
+  ///
+  Future<List<Map<String, dynamic>>> getServerList() async {
+    final prefs = await SharedPreferences.getInstance();
+    final serverList = prefs.getStringList('appServersList') ?? [];
+    final decodedServerList =
+        serverList.map((serverJson) => jsonDecode(serverJson)).toList();
+    return decodedServerList.cast<Map<String, dynamic>>();
+  }
+
+  Future<void> updateServerList(serverIp, port, password) async {
+    final prefs = await SharedPreferences.getInstance();
+    final serverList = prefs.getStringList('appServersList') ?? [];
+
+    // Check if a server with the given ipAddress already exists
+    final serverIndex = serverList.indexWhere((serverJson) {
+      final serverData = jsonDecode(serverJson);
+      return serverData['ipAddress'] == serverIp;
+    });
+
+    if (serverIndex != -1) {
+      // Server already exists, update its port and password
+      final existingServer = jsonDecode(serverList[serverIndex]);
+      existingServer['port'] = port;
+      existingServer['password'] = password;
+      serverList[serverIndex] = jsonEncode(existingServer);
+    } else {
+      // Server does not exist, create a new server entry
+      final newServer = {
+        'ipAddress': serverIp,
+        'port': port,
+        'password': password,
+        'services': [],
+      };
+      serverList.add(jsonEncode(newServer));
+    }
+
+    // Save the updated serverList back to SharedPreferences
+    await prefs.setStringList('appServersList', serverList);
+    print(serverList);
+  }
+
+  Future<void> updateServiceList(
+      List<String> serverIPs, String serviceName) async {
+    final prefs = await SharedPreferences.getInstance();
+    final serverList = prefs.getStringList('appServersList') ?? [];
+    print(serverList);
+
+    // Update the services for each server with the specified IPs
+    for (var serverIP in serverIPs) {
+      final serverIndex = serverList.indexWhere((serverJson) {
+        final serverData = jsonDecode(serverJson);
+        return serverData['ipAddress'] == serverIP;
+      });
+
+      if (serverIndex != -1) {
+        final serverData = jsonDecode(serverList[serverIndex]);
+        final services = serverData['services'] as List<dynamic>;
+
+        // Check if the service name already exists in the server's services list
+        if (!services.contains(serviceName)) {
+          services.add(serviceName);
+          serverData['services'] = services;
+          serverList[serverIndex] = jsonEncode(serverData);
+        }
+      }
+    }
+
+    // Save the updated serverList back to SharedPreferences
+    await prefs.setStringList('appServersList', serverList);
+    print(serverList);
+  }
+
+  Future<String?> getPasswordByServerIp(String serverIp) async {
+    final prefs = await SharedPreferences.getInstance();
+    final serverList = prefs.getStringList('appServersList') ?? [];
+
+    // Find the server with the given IP address
+    final serverData = serverList.firstWhere(
+      (serverJson) {
+        final server = jsonDecode(serverJson);
+        return server['ipAddress'] == serverIp;
+      },
+      orElse: () => '',
+    );
+
+    if (serverData.isNotEmpty) {
+      final server = jsonDecode(serverData);
+      return server['password'];
+    } else {
+      // Server with the given IP not found
+      return null;
+    }
+  }
+
+  Future checkIfServerExist(serverIp) async {
+    final prefs = await SharedPreferences.getInstance();
+    final serverList = prefs.getStringList('appServersList') ?? [];
+
+    // Check if a server with the given ipAddress already exists
+    final serverIndex = serverList.indexWhere((serverJson) {
+      final serverData = jsonDecode(serverJson);
+      return serverData['ipAddress'] == serverIp;
+    });
+
+    if (serverIndex != -1) {
+      return true;
+    } else {
+      return false;
     }
   }
 }

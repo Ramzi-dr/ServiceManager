@@ -10,15 +10,14 @@ import 'package:service_manager/loginPage.dart';
 import 'package:window_manager/window_manager.dart';
 
 Future<void> main() async {
-  //SharedPreferences prefs = await SharedPreferences.getInstance();
-  //prefs.clear();
   WidgetsFlutterBinding.ensureInitialized();
   final database = DataBase();
   await database.init();
+
   await windowManager.ensureInitialized();
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-    WindowManager.instance.setMinimumSize(const Size(800, 800));
-    WindowManager.instance.setMaximumSize(const Size(800, 900));
+    WindowManager.instance.setMinimumSize(const Size(600, 800));
+    WindowManager.instance.setMaximumSize(const Size(600, 900));
   }
   runApp(const MyApp());
 }

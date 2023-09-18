@@ -18,7 +18,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: CircularmenuWidget(fabKey: widget.fabKey!),
+      floatingActionButton: CircularMenuWidget(fabKey: widget.fabKey!),
       resizeToAvoidBottomInset: true,
       backgroundColor: Style.backGroundColor,
       appBar: AppBar(
