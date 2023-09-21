@@ -1,37 +1,116 @@
+import 'dart:async';
 import 'dart:io';
+import 'dart:convert';
+import 'package:ssh2/ssh2.dart';
 
-///get the list of services
-Future checkServiceInServicesList(serviceName) async {
-  bool exist = false;
-  final result =
-      await Process.run('systemctl', ['list-units', '--type=service']);
+class CheckServicesState {
+  CheckServicesState(
+      {required this.serverIp,
+      required this.serviceName,
+      this.sshPort,
+      this.sshPassword,
+      this.sshUserName}) {
+    isRemote = isRemoteCondition();
+  }
 
-  final output = result.stdout;
-  print(output);
-  // Define a regular expression pattern to match service names
-  final pattern = RegExp(r'(\S+)\.service\s+(\S+)\s+(\S+)\s+(\S+)\s+(.+)');
+  final List serviceName;
+  final String serverIp;
+  final int? sshPort;
+  final String? sshPassword;
+  final String? sshUserName;
+  late bool isRemote;
 
-  // Search for the service name in the lines using the pattern
-  final matches = pattern.allMatches(output);
+  bool isRemoteCondition() {
+    return serverIp != 'localServer';
+  }
 
-  for (final match in matches) {
-    final serviceNameInOutput = match.group(1);
+  Future serviceState() async {
+    if (isRemote) {
+      final client = SSHClient(
+          host: serverIp,
+          port: sshPort ?? 22,
+          passwordOrKey: sshPassword,
+          username: sshUserName ?? '');
 
-    if (serviceNameInOutput == serviceName) {
-      exist = true;
+      try {
+        // Connect to the server
+        await client.connect();
+
+        // Execute a command to check if the service is running
+        final result = await client.execute('systemctl is-active $serviceName');
+
+        // Check the result
+        if (result!.contains('active')) {
+          print('The service is running.');
+        } else {
+          print('The service is not running.');
+        }
+
+        // Disconnect from the server
+        await client.disconnect();
+      } catch (e) {
+        print('Error: $e');
+      } finally {
+        client.disconnect();
+      }
+    } else if (!isRemote) {
+      final commandToRun = 'systemctl status $serviceName';
+
+      final process = await Process.start(
+        'bash',
+        ['-c', commandToRun],
+      );
+
+      final stdout = await process.stdout.transform(utf8.decoder).join();
+      final stderr = await process.stderr.transform(utf8.decoder).join();
+
+      final exitCode = await process.exitCode;
+
+      // Check if the service is active or not in the stdout
+      final isServiceOnline = stdout.contains('Active: active (running)');
+
+      // Print the result
+      print('$serviceName: ${isServiceOnline ? 'online' : 'offline'}');
+
+      // Print any errors or exit code if needed
+      if (stderr.isNotEmpty) {
+        print('stderr: $stderr');
+      }
+
+      if (exitCode != 0) {
+        print('Exit code: $exitCode');
+      }
     }
   }
-  return exist;
 }
 
-Future startService(String serviceName) async {
-  final result = await Process.run('sudo', ['systemctl', 'start', serviceName]);
-  print(result.stdout);
-  print(result.stderr);
-}
+Future startService(serviceName) async {
+  // Replace with your service name
 
-Future stopService(String serviceName) async {
-  final result = await Process.run('sudo', ['systemctl', 'stop', serviceName]);
-  print(result.stdout);
-  print(result.stderr);
+  final commandToRun = 'systemctl start $serviceName';
+
+  final process = await Process.start(
+    'bash',
+    ['-c', commandToRun],
+  );
+
+  final stdout = await process.stdout.transform(utf8.decoder).join();
+  final stderr = await process.stderr.transform(utf8.decoder).join();
+
+  final exitCode = await process.exitCode;
+
+  // Check if the service is active or not in the stdout
+  final isServiceOnline = stdout.contains('Active: active (running)');
+
+  // Print the result
+  print('$serviceName: ${isServiceOnline ? 'online' : 'offline'}');
+
+  // Print any errors or exit code if needed
+  if (stderr.isNotEmpty) {
+    print('stderr: $stderr');
+  }
+
+  if (exitCode != 0) {
+    print('Exit code: $exitCode');
+  }
 }
