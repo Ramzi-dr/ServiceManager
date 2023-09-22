@@ -2,12 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:service_manager/bigButton.dart';
-import 'package:service_manager/createServiceStopStarter.dart';
 import 'package:service_manager/database.dart';
 import 'package:service_manager/homePage.dart';
-import 'package:service_manager/payloadCollection.dart';
 import 'package:service_manager/style.dart';
-import 'package:service_manager/terminalCommand.dart';
 import 'package:service_manager/warningMessage.dart';
 
 class AddRemoteServer extends StatefulWidget {
@@ -21,28 +18,36 @@ class AddRemoteServer extends StatefulWidget {
 class _AddRemoteServerState extends State<AddRemoteServer> {
   String serverIp = '';
   String sshPort = '';
-  String sudoPassword = '';
+  String password = '';
+  String userName = '';
   String serverMapName = 'serverMap';
   Map serverMap = {};
   var focusNodeServerIp = FocusNode();
   var focusNodeSshPort = FocusNode();
-  var focusNodeSudoPassword = FocusNode();
+  var focusNodePassword = FocusNode();
+  var focusNodeUserName = FocusNode();
   final serverIpController = TextEditingController();
   final sshPortController = TextEditingController();
-  final sudoPasswordController = TextEditingController();
+  final passwordController = TextEditingController();
+  final userNameController = TextEditingController();
 
   void clearEntry() {
     serverIp = '';
     sshPort = '';
-    sudoPassword = '';
-    sudoPasswordController.clear();
+    userName = '';
+    password = '';
+    passwordController.clear();
     serverIpController.clear();
     sshPortController.clear();
+    userNameController.clear();
   }
 
   createButtonPressed() async {
-    if (sudoPassword.isEmpty) {
-      warning('Please enter sudo password', context);
+    if (userName.isEmpty) {
+      warning('Please enter user name', context);
+      clearEntry();
+    } else if (password.isEmpty) {
+      warning('Please enter password', context);
       clearEntry();
     } else if ((serverIp.isNotEmpty && sshPort.isEmpty) ||
         (serverIp.isEmpty && sshPort.isNotEmpty)) {
@@ -51,13 +56,22 @@ class _AddRemoteServerState extends State<AddRemoteServer> {
       clearEntry();
     } else if (serverIp.isNotEmpty &&
         sshPort.isNotEmpty &&
-        sudoPassword.isNotEmpty) {
-      DataBase().updateServerList(serverIp, sshPort, sudoPassword);
+        password.isNotEmpty &&
+        userName.isNotEmpty) {
+      DataBase().updateServerList(serverIp, sshPort, userName, password);
       clearEntry();
-    } else if (sudoPassword.isNotEmpty && serverIp.isEmpty && sshPort.isEmpty) {
-      DataBase().updateServerList('localServer', 'none', sudoPassword);
+    } else if (password.isNotEmpty &&
+        userName.isNotEmpty &&
+        serverIp.isEmpty &&
+        sshPort.isEmpty) {
+      warning('Please check the server user name, ip and ssh port!', context);
       clearEntry();
-      Navigator.pushNamed(context, HomePage.id);
+    } else if (password.isNotEmpty &&
+        userName.isNotEmpty &&
+        serverIp.isEmpty &&
+        sshPort.isEmpty) {
+      warning('Please check the server ip and ssh port!', context);
+      clearEntry();
     }
   }
 
@@ -66,10 +80,10 @@ class _AddRemoteServerState extends State<AddRemoteServer> {
   void _toggleObscured() {
     setState(() {
       _obscured = !_obscured;
-      if (focusNodeSudoPassword.hasPrimaryFocus)
-        return; // If focus is on text field, dont unfocus
-      focusNodeSudoPassword.canRequestFocus =
-          false; // Prevents focus if tap on eye
+      if (focusNodePassword.hasPrimaryFocus) {
+        return; // If focus is on text field, don't unfocus
+      }
+      focusNodePassword.canRequestFocus = false; // Prevents focus if tap on eye
     });
   }
 
@@ -97,7 +111,20 @@ class _AddRemoteServerState extends State<AddRemoteServer> {
               const SizedBox(
                 height: 30,
               ),
-              const Text('Please enter sudo password'),
+              const Text('Please enter user name'),
+              Padding(
+                padding: const EdgeInsets.all(10),
+                child: TextField(
+                  controller: userNameController,
+                  focusNode: focusNodeUserName,
+                  textAlign: TextAlign.center,
+                  autofocus: true,
+                  onChanged: (value) {
+                    userName = value;
+                  },
+                ),
+              ),
+              const Text('Please enter password'),
               Padding(
                 padding: const EdgeInsets.all(10),
                 child: TextField(
@@ -113,21 +140,19 @@ class _AddRemoteServerState extends State<AddRemoteServer> {
                                       ? Icons.visibility_rounded
                                       : Icons.visibility_off_rounded,
                                   size: 24)))),
-                  controller: sudoPasswordController,
-                  focusNode: focusNodeSudoPassword,
+                  controller: passwordController,
+                  focusNode: focusNodePassword,
                   textAlign: TextAlign.center,
-                  autofocus: true,
                   obscureText: _obscured,
                   onChanged: (value) {
-                    sudoPassword = value;
+                    password = value;
                   },
                 ),
               ),
               const SizedBox(
                 height: 30,
               ),
-              const Text(
-                  'Enter the server Ip address ( ONLY FOR REMOTE SERVER  )'),
+              const Text('Enter the server Ip address'),
               Padding(
                 padding: const EdgeInsets.all(10),
                 child: TextField(
@@ -142,8 +167,7 @@ class _AddRemoteServerState extends State<AddRemoteServer> {
               const SizedBox(
                 height: 30,
               ),
-              const Text(
-                  'Enter the ssh Port number ( ONLY FOR REMOTE SERVER )'),
+              const Text('Enter the ssh Port number'),
               Padding(
                 padding: const EdgeInsets.all(10),
                 child: TextField(
@@ -169,7 +193,7 @@ class _AddRemoteServerState extends State<AddRemoteServer> {
                 height: 20,
               ),
               const Text(
-                'Please make sure the server is running!',
+                'BE SURE SSH SERVER IS RUNNING ON MACHINE INC PORT FORWARDING!',
                 style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: Color.fromARGB(255, 78, 47, 40)),

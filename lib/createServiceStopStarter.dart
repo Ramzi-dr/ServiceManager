@@ -1,8 +1,9 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:service_manager/bigButton.dart';
 import 'package:service_manager/database.dart';
 import 'package:service_manager/homePage.dart';
-import 'package:service_manager/payloadCollection.dart';
 import 'package:service_manager/showDialog.dart';
 import 'package:service_manager/style.dart';
 import 'package:service_manager/warningMessage.dart';
@@ -64,15 +65,13 @@ class _CreateServiceStopStarterState extends State<CreateServiceStopStarter> {
     if (serverList.isNotEmpty) {
       setState(() {
         for (var _ in serverList) {
-          if (_["ipAddress"] != 'localServer') {
-            final Map<String, dynamic> serverIpAndPort = {
-              _['ipAddress']: _['port']
-            };
-            myServerListMap.add(serverIpAndPort);
-            _myServerList.add(_['ipAddress']);
-            checkBoxList.add(startRemoteServerCheckBoxValue);
-            selectedColorList.add(selectedColor);
-          }
+          final Map<String, dynamic> serverIpAndPort = {
+            _['ipAddress']: _['port']
+          };
+          myServerListMap.add(serverIpAndPort);
+          _myServerList.add(_['ipAddress']);
+          checkBoxList.add(startRemoteServerCheckBoxValue);
+          selectedColorList.add(selectedColor);
         }
       });
     }
@@ -85,34 +84,21 @@ class _CreateServiceStopStarterState extends State<CreateServiceStopStarter> {
   final serviceNameController = TextEditingController();
 
   createButtonPressed() async {
-    if (checkedServiceList.isEmpty) {
-      warning('Please you must choose at least one server!', context);
-    } else if (serviceName.isEmpty) {
-      warning('Service name is missing!', context);
-    } else if (checkedServiceList.isNotEmpty && serviceName.isNotEmpty) {
-      print(checkedServiceList);
-      if (checkedServiceList.contains('localServer')) {
-        bool localServerExist =
-            await DataBase().checkIfServerExist('localServer');
-        if (!localServerExist) {
-          await DataBase().updateServerList('localServer', '', '');
-          warning('please configure the local server Password first', context);
-        } else if (localServerExist) {
-          final passwordExist =
-              await DataBase().getPasswordByServerIp('localServer');
-          if (passwordExist!.isNotEmpty) {
-            await DataBase().updateServiceList(checkedServiceList, serviceName);
-            Navigator.pushNamed(context, HomePage.id);
-          } else if (passwordExist.isEmpty) {
-            warning(
-                'please configure the local server Password first', context);
-          }
-        }
-      } else {
-        await DataBase().updateServiceList(checkedServiceList, serviceName);
+    final serverList = await DataBase().getServerList();
 
-        Navigator.pushNamed(context, HomePage.id);
-      }
+    if (serverList.isEmpty) {
+      warning('Please configure at least one Server before creating service! ',
+          context);
+    } else if (serverList.isNotEmpty && checkedServiceList.isEmpty) {
+      warning('Please you must choose at least one server!', context);
+    } else if (serverList.isNotEmpty &&
+        checkedServiceList.isEmpty &&
+        serviceName.isEmpty) {
+      warning('Service name is missing!', context);
+    } else if (checkedServiceList.isNotEmpty &&
+        serviceName.isNotEmpty &&
+        serverList.isNotEmpty) {
+      await DataBase().updateServiceList(checkedServiceList, serviceName);
     }
   }
 
@@ -130,7 +116,7 @@ class _CreateServiceStopStarterState extends State<CreateServiceStopStarter> {
       appBar: AppBar(
         centerTitle: true,
         automaticallyImplyLeading: false,
-        title: const Text('Create stop-start service'),
+        title: const Text('Add service to server'),
       ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -160,24 +146,6 @@ class _CreateServiceStopStarterState extends State<CreateServiceStopStarter> {
               const SizedBox(
                 height: 30,
               ),
-              Container(
-                color: const Color.fromARGB(255, 120, 173, 180),
-                child: Padding(
-                    padding: const EdgeInsets.only(left: 40, right: 40),
-                    child: CheckboxListTile(
-                        title: const Text(
-                          'Local server',
-                        ),
-                        value: _localServerValue,
-                        onChanged: (bool? value) {
-                          _toggleLocalServerCheckBox();
-                          if (value!) {
-                            checkedServiceList.add('localServer');
-                          } else if (!value) {
-                            checkedServiceList.remove('localServer');
-                          }
-                        })),
-              )
             ],
           ),
           Expanded(
@@ -189,12 +157,12 @@ class _CreateServiceStopStarterState extends State<CreateServiceStopStarter> {
                 itemCount: myServerListMap.length, //_myServerList.length,
                 itemBuilder: (context, index) {
                   return GestureDetector(
-                    onLongPress: ()async {
-                       await showMyDialog(context,
-                            'This will delete the Server: ', 'delete server', [
-                          _myServerList[index],
-                          _myServerList[index]
-                        ]);
+                    onLongPress: () async {
+                      await showMyDialog(
+                          context,
+                          'This will delete the Server: ',
+                          'delete server',
+                          [_myServerList[index], _myServerList[index]]);
                     },
                     child: CheckboxListTile(
                       // tileColor: const Color.fromARGB(

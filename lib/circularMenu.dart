@@ -133,7 +133,8 @@ class CircularMenuWidget extends StatelessWidget {
                 Navigator.pushNamed(context, AddRemoteServer.id);
               },
               icon: const Tooltip(
-                  message: 'config server', child: Icon(Icons.computer))),
+                  message: 'config remote server',
+                  child: Icon(Icons.computer))),
 
           IconButton(
               onPressed: () {

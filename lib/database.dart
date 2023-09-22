@@ -30,7 +30,7 @@ class DataBase {
     return decodedServerList.cast<Map<String, dynamic>>();
   }
 
-  Future<void> updateServerList(serverIp, port, password) async {
+  Future<void> updateServerList(serverIp, port, userName, password) async {
     final prefs = await SharedPreferences.getInstance();
     final serverList = prefs.getStringList('appServersList') ?? [];
 
@@ -45,16 +45,36 @@ class DataBase {
       final existingServer = jsonDecode(serverList[serverIndex]);
       existingServer['port'] = port;
       existingServer['password'] = password;
+      existingServer['userName'] = userName;
       serverList[serverIndex] = jsonEncode(existingServer);
     } else {
       // Server does not exist, create a new server entry
       final newServer = {
         'ipAddress': serverIp,
         'port': port,
+        'userName': userName,
         'password': password,
         'services': [],
       };
       serverList.add(jsonEncode(newServer));
+    }
+
+    // Save the updated serverList back to SharedPreferences
+    await prefs.setStringList('appServersList', serverList);
+  }
+
+  Future<void> addServerStatusToExistingServers(
+      String serverIp, String serverStatus) async {
+    final prefs = await SharedPreferences.getInstance();
+    final serverList = prefs.getStringList('appServersList') ?? [];
+
+    for (int i = 0; i < serverList.length; i++) {
+      final serverData = jsonDecode(serverList[i]);
+      if (serverData['ipAddress'] == serverIp) {
+        serverData['serverStatus'] = serverStatus;
+        serverList[i] = jsonEncode(serverData);
+        break; // Exit the loop once the server is updated
+      }
     }
 
     // Save the updated serverList back to SharedPreferences
@@ -66,7 +86,6 @@ class DataBase {
       List<String> serverIPs, String serviceName) async {
     final prefs = await SharedPreferences.getInstance();
     final serverList = prefs.getStringList('appServersList') ?? [];
-    print(serverList);
 
     // Update the services for each server with the specified IPs
     for (var serverIP in serverIPs) {
@@ -90,7 +109,6 @@ class DataBase {
 
     // Save the updated serverList back to SharedPreferences
     await prefs.setStringList('appServersList', serverList);
-    print(serverList);
   }
 
   Future<String?> getPasswordByServerIp(String serverIp) async {
@@ -134,8 +152,6 @@ class DataBase {
 
   Future<void> deleteServiceFromServer(
       String serverIP, String serviceName) async {
-    print(serverIP);
-    print(serviceName);
     final prefs = await SharedPreferences.getInstance();
     final serverList = prefs.getStringList('appServersList') ?? [];
 
