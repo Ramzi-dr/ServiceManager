@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, unused_element
 
 import 'package:flutter/material.dart';
 import 'package:service_manager/bigButton.dart';
@@ -43,9 +43,6 @@ class _CreateServiceStopStarterState extends State<CreateServiceStopStarter> {
       selectedColorList[index] = (selectedColorList[index] == selectedColor)
           ? Style.buttonColor
           : selectedColor;
-      // _serviceColorList[index] = (_serviceColorList[index] == _serviceColor)
-      //     ? Style.notActiveServiceButtonColor
-      //     : _serviceColor;
     });
   }
 

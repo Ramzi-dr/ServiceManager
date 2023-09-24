@@ -1,6 +1,7 @@
 // ignore_for_file: unrelated_type_equality_checks
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:service_manager/bigButton.dart';
 import 'package:service_manager/database.dart';
 import 'package:service_manager/homePage.dart';
@@ -81,7 +82,7 @@ class _AddRemoteServerState extends State<AddRemoteServer> {
     setState(() {
       _obscured = !_obscured;
       if (focusNodePassword.hasPrimaryFocus) {
-        return; // If focus is on text field, don't unfocus
+        return;
       }
       focusNodePassword.canRequestFocus = false; // Prevents focus if tap on eye
     });
@@ -171,6 +172,8 @@ class _AddRemoteServerState extends State<AddRemoteServer> {
               Padding(
                 padding: const EdgeInsets.all(10),
                 child: TextField(
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  keyboardType: TextInputType.number,
                   controller: sshPortController,
                   focusNode: focusNodeSshPort,
                   textAlign: TextAlign.center,
@@ -192,11 +195,16 @@ class _AddRemoteServerState extends State<AddRemoteServer> {
               const SizedBox(
                 height: 20,
               ),
-              const Text(
-                'BE SURE SSH SERVER IS RUNNING ON MACHINE INC PORT FORWARDING!',
-                style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Color.fromARGB(255, 78, 47, 40)),
+              const Center(
+                child: Text(
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  'BE SURE SSH SERVER IS RUNNING ON MACHINE INC PORT FORWARDING!',
+                  style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Color.fromARGB(255, 78, 47, 40)),
+                ),
               )
             ],
           ),

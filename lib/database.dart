@@ -79,7 +79,7 @@ class DataBase {
 
     // Save the updated serverList back to SharedPreferences
     await prefs.setStringList('appServersList', serverList);
-    print(serverList);
+    
   }
 
   Future<void> updateServiceList(
@@ -112,7 +112,6 @@ class DataBase {
   }
 
   Future<String?> getPasswordByServerIp(String serverIp) async {
-    final prefs = await SharedPreferences.getInstance();
     final serverList = prefs.getStringList('appServersList') ?? [];
 
     // Find the server with the given IP address
@@ -134,7 +133,6 @@ class DataBase {
   }
 
   Future checkIfServerExist(serverIp) async {
-    final prefs = await SharedPreferences.getInstance();
     final serverList = prefs.getStringList('appServersList') ?? [];
 
     // Check if a server with the given ipAddress already exists
@@ -152,7 +150,6 @@ class DataBase {
 
   Future<void> deleteServiceFromServer(
       String serverIP, String serviceName) async {
-    final prefs = await SharedPreferences.getInstance();
     final serverList = prefs.getStringList('appServersList') ?? [];
 
     // Decode the entire list of server data
@@ -191,7 +188,6 @@ class DataBase {
   }
 
   Future<void> deleteServer(String serverIP) async {
-    final prefs = await SharedPreferences.getInstance();
     final serverList = prefs.getStringList('appServersList') ?? [];
 
     // Decode the entire list of server data
@@ -211,6 +207,75 @@ class DataBase {
       final updatedServerList =
           decodedServerList.map((server) => jsonEncode(server)).toList();
       await prefs.setStringList('appServersList', updatedServerList);
+      
     }
+  }
+
+  Future saveOrUpdateServersData(List<Map<String, dynamic>> data) async {
+    final jsonData = prefs.getString('serversData');
+    List<Map<String, dynamic>> existingData = [];
+
+    if (jsonData != null) {
+      existingData = List<Map<String, dynamic>>.from(json.decode(jsonData));
+    }
+
+    // Create a list to store indices of maps to be deleted
+    List<int> indicesToDelete = [];
+
+    for (var newData in data) {
+      final newDataServerIp = newData['serverIp'];
+      bool updated = false;
+
+      for (var i = 0; i < existingData.length; i++) {
+        final existingServerIp = existingData[i]['serverIp'];
+
+        if (newDataServerIp == existingServerIp) {
+          // Update the existing data with the new data
+          existingData[i] = newData;
+          updated = true;
+          break;
+        }
+      }
+
+      if (!updated) {
+        // If the data was not updated, add it as a new entry
+        existingData.add(newData);
+      }
+    }
+
+    // Find maps in existingData that should be deleted
+    for (var i = 0; i < existingData.length; i++) {
+      final existingServerIp = existingData[i]['serverIp'];
+      bool shouldDelete = true;
+
+      for (var newData in data) {
+        if (newData['serverIp'] == existingServerIp) {
+          shouldDelete = false;
+          break;
+        }
+      }
+
+      if (shouldDelete) {
+        indicesToDelete.add(i);
+      }
+    }
+
+    // Remove the maps that should be deleted
+    indicesToDelete.sort((a, b) => b.compareTo(a)); // Sort in reverse order
+    for (var index in indicesToDelete) {
+      existingData.removeAt(index);
+    }
+
+    final updatedJsonData = jsonEncode(existingData);
+    await prefs.setString('serversData', updatedJsonData);
+  }
+
+  Future<List<Map<String, dynamic>>> fetchData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonData = prefs.getString('serversData');
+    if (jsonData != null) {
+      return List<Map<String, dynamic>>.from(json.decode(jsonData));
+    }
+    return [];
   }
 }

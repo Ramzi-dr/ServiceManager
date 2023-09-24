@@ -1,12 +1,11 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
-import 'package:service_manager/createServiceStopStarter.dart';
 import 'package:service_manager/database.dart';
 import 'package:service_manager/homePage.dart';
-import 'package:service_manager/payloadCollection.dart';
 
 Future<void> showMyDialog(context, title, action, List args) async {
-  print(args[0]);
-  print(args[1]);
+  
   return showDialog<void>(
     context: context,
     barrierDismissible: true, // user must tap button!

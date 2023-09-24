@@ -1,20 +1,27 @@
+// ignore: file_names
 import 'dart:async';
-import 'dart:io';
 import 'dart:convert';
 import 'package:dartssh2/dartssh2.dart';
 import 'package:service_manager/database.dart';
-import 'package:service_manager/showDialog.dart';
 import 'package:flutter/material.dart';
 
 class CheckServicesState {
   Future serversChecker(context) async {
+    List<Map<String, dynamic>> dataToStore = [];
     final serverList = await DataBase().getServerList();
+    String stop = '   _Stop_    ';
+    String start = '   _Start_   ';
+    String notFound = 'NotFound';
+
     if (serverList.isNotEmpty) {
       for (var server in serverList) {
         String serverIp = server['ipAddress'];
         int port = int.parse(server['port']);
         String userName = server['userName'];
         String password = server['password'];
+        List<dynamic> serviceList =
+            server['services']; // Existing list for services
+        String serverState = '';
 
         try {
           final socket = await SSHSocket.connect(serverIp, port);
@@ -24,97 +31,204 @@ class CheckServicesState {
             username: userName,
             onPasswordRequest: () => password,
           );
-          await client.authenticated;
-          print(client.remoteVersion);
+          serverState = 'online';
+          if (serviceList.isNotEmpty) {
+            for (var i = 0; i < serviceList.length; i++) {
+              var service = serviceList[i];
+              final res = await client
+                  .run('echo $password | sudo -S systemctl status $service');
+              var response = utf8.decode(res);
+              var state = '';
+              if (response.contains("Active: active (running)")) {
+                state = 'active';
+              } else if (response.contains("Active: inactive (dead)")) {
+                state = 'inactive';
+              } else {
+                state = 'notFound';
+              }
 
-          if (client.isClosed == false) {
-            await DataBase()
-                .addServerStatusToExistingServers(serverIp, 'online');
+              serviceList[i] = {
+                'serviceName': service,
+                'serviceState': state,
+                'serviceButtonText': state == 'active'
+                    ? stop
+                    : state == 'inactive'
+                        ? start
+                        : notFound,
+                'serviceButtonColor': 'buttonColor',
+                'serviceIconColor': 'iconColor'
+              };
+            }
           }
           client.close();
         } catch (e) {
-          await DataBase()
-              .addServerStatusToExistingServers(serverIp, 'offline');
-          showDialog(
-            context: context,
-            builder: (ctx) => AlertDialog(
-              title: Text(
-                  style: const TextStyle(
-                      color: Colors.red, fontWeight: FontWeight.bold),
-                  "error : $serverIp  : $port"),
-              content: SizedBox(
-                height: 60,
-                child: Center(child: Text(e.toString())),
-              ),
-              actions: <Widget>[
-                const SizedBox(
-                  height: 80,
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(ctx).pop();
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(14),
-                    child: const Text("return"),
-                  ),
-                ),
-              ],
-            ),
-          );
+          serverState = 'offline';
+          if (serviceList.isNotEmpty) {
+            for (var i = 0; i < serviceList.length; i++) {
+              var service = serviceList[i];
+              serviceList[i] = {
+                'serviceName': service,
+                'serviceState': 'offline',
+                'serviceButtonText': 'offline',
+                'serviceButtonColor': 'buttonColor',
+                'serviceIconColor': 'iconColor'
+              };
+            }
+          }
+
+          serverErrorShowDialog(context, serverIp, port, e);
         }
+        Map<String, dynamic> serverData = {
+          'serverIp': serverIp,
+          'serverState': serverState,
+          'serviceList': serviceList,
+        };
+        dataToStore.add(serverData);
+        DataBase().saveOrUpdateServersData(dataToStore);
+      }
+      return await DataBase().fetchData();
+    }
+  }
+
+  Future<String> statusStartStopService(
+    String serverIp,
+    var service,
+    String command,
+  ) async {
+    final serverList = await DataBase().getServerList();
+
+    String userName = '';
+    String password = '';
+    int port = 0;
+    for (var server in serverList) {
+      if (server['ipAddress'] == serverIp) {
+        userName = server['userName'];
+        password = server['password'];
+        port = int.parse(server['port']);
       }
     }
-    return DataBase().getServerList();
-  }
-}
 
-// Future toDoCommand(String command, String serviceName) async {
-//   final socket = await SSHSocket.connect(serverIp, 8022);
+    final completer = Completer<String>(); // Create a Completer
 
-//   final client = SSHClient(
-//     socket,
-//     username: sshUserName ?? '',
-//     onPasswordRequest: () => sshPassword,
-//   );
+    try {
+      final socket = await SSHSocket.connect(serverIp, port);
 
-//   final res = await client
-//       .run('echo $sshPassword | sudo -S systemctl $command $serviceName');
+      final client = SSHClient(
+        socket,
+        username: userName,
+        onPasswordRequest: () => password,
+      );
 
-//   print("\n");
-//   print(utf8.decode(res));
+      await client.run('echo $password | sudo -S systemctl $command $service');
 
-//   client.close();
-//   await client.done;
-// }
+      Future.delayed(const Duration(seconds: 1), () async {
+        final statusRes = await client
+            .run('echo $password | sudo -S systemctl status $service');
+        var response = utf8.decode(statusRes);
 
-Future startService(serviceName) async {
-  // Replace with your service name
+        client.close();
 
-  final commandToRun = 'systemctl start $serviceName';
+        if (response.contains("Active: active (running)")) {
+          completer.complete('active'); // Resolve the Completer with 'active'
+        } else if (response.contains("Active: inactive (dead)")) {
+          completer
+              .complete('inactive'); // Resolve the Completer with 'inactive'
+        } else if (response.contains("could not be found")) {
+          completer
+              .complete('notFound'); // Resolve the Completer with 'notFound'
+        } else {
+          completer.complete('unknown'); // Handle other cases as needed
+        }
+      });
+    } catch (e) {
+      completer.completeError(e); // Resolve the Completer with an error
+    }
 
-  final process = await Process.start(
-    'bash',
-    ['-c', commandToRun],
-  );
-
-  final stdout = await process.stdout.transform(utf8.decoder).join();
-  final stderr = await process.stderr.transform(utf8.decoder).join();
-
-  final exitCode = await process.exitCode;
-
-  // Check if the service is active or not in the stdout
-  final isServiceOnline = stdout.contains('Active: active (running)');
-
-  // Print the result
-  print('$serviceName: ${isServiceOnline ? 'online' : 'offline'}');
-
-  // Print any errors or exit code if needed
-  if (stderr.isNotEmpty) {
-    print('stderr: $stderr');
+    return completer.future; // Return the Future from the Completer
   }
 
-  if (exitCode != 0) {
-    print('Exit code: $exitCode');
+  Future<String> serviceState(
+    String serverIp,
+    var service,
+  ) async {
+    final serverList = await DataBase().getServerList();
+
+    String userName = '';
+    String password = '';
+    int port = 0;
+    for (var server in serverList) {
+      if (server['ipAddress'] == serverIp) {
+        userName = server['userName'];
+        password = server['password'];
+        port = int.parse(server['port']);
+      }
+    }
+
+    final completer = Completer<String>(); // Create a Completer
+
+    try {
+      final socket = await SSHSocket.connect(serverIp, port);
+
+      final client = SSHClient(
+        socket,
+        username: userName,
+        onPasswordRequest: () => password,
+      );
+
+      Future.delayed(const Duration(milliseconds: 200), () async {
+        final statusRes = await client
+            .run('echo $password | sudo -S systemctl status $service');
+        var response = utf8.decode(statusRes);
+
+        client.close();
+
+        if (response.contains("Active: active (running)")) {
+          completer.complete('active'); // Resolve the Completer with 'active'
+        } else if (response.contains("Active: inactive (dead)")) {
+          completer
+              .complete('inactive'); // Resolve the Completer with 'inactive'
+        } else if (response.contains("could not be found")) {
+          completer
+              .complete('notFound'); // Resolve the Completer with 'notFound'
+        } else {
+          completer.complete('unknown'); // Handle other cases as needed
+        }
+      });
+    } catch (e) {
+      completer.completeError(e); // Resolve the Completer with an error
+    }
+
+    return completer.future; // Return the Future from the Completer
+  }
+
+  Future<dynamic> serverErrorShowDialog(
+      context, String serverIp, int port, Object e) {
+    return showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(
+            style:
+                const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+            "error : $serverIp  : $port"),
+        content: SizedBox(
+          height: 60,
+          child: Center(child: Text(e.toString())),
+        ),
+        actions: <Widget>[
+          const SizedBox(
+            height: 80,
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+            },
+            child: Container(
+              padding: const EdgeInsets.all(14),
+              child: const Text("return"),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

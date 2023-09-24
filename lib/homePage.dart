@@ -1,11 +1,8 @@
 import 'package:fab_circular_menu/fab_circular_menu.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:service_manager/circularMenu.dart';
 import 'package:service_manager/style.dart';
-
 import 'package:service_manager/ServiceListTitle.dart';
-import 'package:service_manager/terminalCommand.dart';
 
 class HomePage extends StatefulWidget {
   static const id = 'HomePage';
@@ -24,6 +21,12 @@ class _HomePageState extends State<HomePage> {
       resizeToAvoidBottomInset: true,
       backgroundColor: Style.backGroundColor,
       appBar: AppBar(
+        leading: IconButton(
+          icon:const Icon(Icons.refresh),
+          onPressed: () {
+            Navigator.pushReplacementNamed(context, HomePage.id);
+          },
+        ),
         bottomOpacity: 0.9,
         automaticallyImplyLeading: false,
         centerTitle: true,
@@ -43,31 +46,28 @@ class _HomePageState extends State<HomePage> {
                 leading: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                       backgroundColor: Style.lightButtonBackgroundColor),
-                  child: const Text('Befehl'),
+                  child: const Text('   Befehl   '),
                   onPressed: () async {
-                  //   CheckServicesState terminal = CheckServicesState(
-                  //       serverIp: '31.24.10.138',
-                  //       sshPort: 8022,
-                  //       sshPassword: '3018Bern!',
-                  //       sshUserName: 'bst');
-                  // //  await terminal.serviceState('glutz-eaccess');
-                    ;
+                
                   },
                 ),
                 title: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                       backgroundColor: Style.lightButtonBackgroundColor),
-                  child: const Text('Dienst'),
+                  child: const Padding(
+                    padding: EdgeInsets.only(left: 15.0),
+                    child: Text('Dienst'),
+                  ),
                   onPressed: () {
-                    ;
+                    
                   },
                 ),
                 trailing: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                       backgroundColor: Style.lightButtonBackgroundColor),
-                  child: const Text('Status'),
+                  child: const Text('  Status  '),
                   onPressed: () {
-                    ;
+                    
                   },
                 ),
               ),

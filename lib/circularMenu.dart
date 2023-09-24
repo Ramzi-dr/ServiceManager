@@ -92,7 +92,7 @@ class CircularMenuWidget extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                              Text(
+                             const  Text(
                                   'Please enter the text exactly as displayed to confirm',
                                   style: TextStyle(color: Colors.red)),
                             ],

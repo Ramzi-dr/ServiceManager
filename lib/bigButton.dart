@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:service_manager/style.dart';
 
 class BigButton extends StatelessWidget {
-  BigButton({
+  const BigButton({
     super.key,
     required this.text,
     required this.fontSize,
@@ -11,6 +11,7 @@ class BigButton extends StatelessWidget {
   });
   final String text;
   final double fontSize;
+  // ignore: prefer_typing_uninitialized_variables
   final  containerAlignment;
   // ignore: prefer_typing_uninitialized_variables
   final onPressed;
