@@ -46,7 +46,7 @@ class _ServiceListTitleState extends State<ServiceListTitle>
                   ['serviceButtonColor'] =
               PayloadCollection.runningServiceStateColor;
           fullServersData[serverIndex]['serviceList'][index]
-              ['serviceIconColor'] = PayloadCollection.runningServiceStateColor;
+              ['serviceIconColor'] = PayloadCollection.onlineServiceStateColor;
         } else if (action == 'inactive') {
           fullServersData[serverIndex]['serviceList'][index]['serviceState'] =
               'inactive';
@@ -56,7 +56,7 @@ class _ServiceListTitleState extends State<ServiceListTitle>
                   ['serviceButtonColor'] =
               PayloadCollection.onlineServiceStateColor;
           fullServersData[serverIndex]['serviceList'][index]
-              ['serviceIconColor'] = PayloadCollection.onlineServiceStateColor;
+              ['serviceIconColor'] = PayloadCollection.runningServiceStateColor;
         }
       });
       // Start the rotation animation for the pressed button's icon
@@ -86,12 +86,12 @@ class _ServiceListTitleState extends State<ServiceListTitle>
             service['serviceButtonColor'] =
                 PayloadCollection.runningServiceStateColor;
             service['serviceIconColor'] =
-                PayloadCollection.runningServiceStateColor;
+                PayloadCollection.onlineServiceStateColor;
           } else if (service['serviceState'] == 'inactive') {
             service['serviceButtonColor'] =
                 PayloadCollection.onlineServiceStateColor;
             service['serviceIconColor'] =
-                PayloadCollection.onlineServiceStateColor;
+                PayloadCollection.runningServiceStateColor;
           } else if (service['serviceState'] == 'notFound') {
             service['serviceButtonColor'] =
                 PayloadCollection.offlineServiceStateColor;
@@ -251,7 +251,7 @@ class _ServiceListTitleState extends State<ServiceListTitle>
         fullServersData[serverIndex]['serviceList'][index]
             ['serviceButtonColor'] = PayloadCollection.runningServiceStateColor;
         fullServersData[serverIndex]['serviceList'][index]['serviceIconColor'] =
-            PayloadCollection.runningServiceStateColor;
+            PayloadCollection.onlineServiceStateColor;
       } else if (action == 'inactive') {
         fullServersData[serverIndex]['serviceList'][index]['serviceState'] =
             'inactive';
@@ -260,7 +260,7 @@ class _ServiceListTitleState extends State<ServiceListTitle>
         fullServersData[serverIndex]['serviceList'][index]
             ['serviceButtonColor'] = PayloadCollection.onlineServiceStateColor;
         fullServersData[serverIndex]['serviceList'][index]['serviceIconColor'] =
-            PayloadCollection.onlineServiceStateColor;
+            PayloadCollection.runningServiceStateColor;
       } else if (action == 'notFound') {
         fullServersData[serverIndex]['serviceList'][index]['serviceState'] =
             'notFound';
