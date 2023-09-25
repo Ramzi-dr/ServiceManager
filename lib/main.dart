@@ -13,8 +13,8 @@ Future<void> main() async {
 
   await windowManager.ensureInitialized();
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-    WindowManager.instance.setMinimumSize(const Size(400, 800));
-    WindowManager.instance.setMaximumSize(const Size(700, 900));
+    WindowManager.instance.setMinimumSize(const Size(600, 600));
+    WindowManager.instance.setMaximumSize(const Size(600, 900));
   }
   runApp(const MyApp());
 }

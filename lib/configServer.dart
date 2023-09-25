@@ -60,6 +60,7 @@ class _AddRemoteServerState extends State<AddRemoteServer> {
         password.isNotEmpty &&
         userName.isNotEmpty) {
       DataBase().updateServerList(serverIp, sshPort, userName, password);
+      notifcation('Server is successfully added', context);
       clearEntry();
     } else if (password.isNotEmpty &&
         userName.isNotEmpty &&
@@ -92,13 +93,20 @@ class _AddRemoteServerState extends State<AddRemoteServer> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Style.backGroundColor,
-      floatingActionButton: IconButton(
-          onPressed: () {
-            serverIpController.clear();
-            sshPortController.clear();
-            Navigator.pushNamed(context, HomePage.id);
-          },
-          icon: const Icon(Icons.cancel)),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: IconButton(
+            iconSize: 50,
+            hoverColor: Colors.blue,
+            onPressed: () {
+              serverIpController.clear();
+              sshPortController.clear();
+              Navigator.pushNamed(context, HomePage.id);
+            },
+            icon: const Icon(
+              Icons.home,
+            )),
+      ),
       appBar: AppBar(
         centerTitle: true,
         automaticallyImplyLeading: false,
@@ -112,10 +120,11 @@ class _AddRemoteServerState extends State<AddRemoteServer> {
               const SizedBox(
                 height: 30,
               ),
-              const Text('Please enter user name'),
+              const Text('Please enter username'),
               Padding(
                 padding: const EdgeInsets.all(10),
                 child: TextField(
+                  cursorColor: const Color.fromARGB(255, 2, 27, 48),
                   controller: userNameController,
                   focusNode: focusNodeUserName,
                   textAlign: TextAlign.center,
@@ -129,6 +138,7 @@ class _AddRemoteServerState extends State<AddRemoteServer> {
               Padding(
                 padding: const EdgeInsets.all(10),
                 child: TextField(
+                  cursorColor: const Color.fromARGB(255, 2, 27, 48),
                   decoration: InputDecoration(
                       floatingLabelBehavior: FloatingLabelBehavior.never,
                       //prefixIcon: Icon(Icons.lock_rounded, size: 24),
@@ -153,10 +163,11 @@ class _AddRemoteServerState extends State<AddRemoteServer> {
               const SizedBox(
                 height: 30,
               ),
-              const Text('Enter the server Ip address'),
+              const Text('Enter the server IP address'),
               Padding(
                 padding: const EdgeInsets.all(10),
                 child: TextField(
+                  cursorColor: const Color.fromARGB(255, 2, 27, 48),
                   controller: serverIpController,
                   focusNode: focusNodeServerIp,
                   textAlign: TextAlign.center,
@@ -168,10 +179,11 @@ class _AddRemoteServerState extends State<AddRemoteServer> {
               const SizedBox(
                 height: 30,
               ),
-              const Text('Enter the ssh Port number'),
+              const Text('Enter the SSH Port number'),
               Padding(
                 padding: const EdgeInsets.all(10),
                 child: TextField(
+                  cursorColor: const Color.fromARGB(255, 2, 27, 48),
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   keyboardType: TextInputType.number,
                   controller: sshPortController,
@@ -186,11 +198,22 @@ class _AddRemoteServerState extends State<AddRemoteServer> {
               const SizedBox(
                 height: 60,
               ),
-              BigButton(
-                text: 'Add server',
-                fontSize: 15,
-                onPressed: createButtonPressed,
-                containerAlignment: Alignment.bottomRight,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  BigButton(
+                    text: 'Clear all',
+                    fontSize: 15,
+                    onPressed: clearEntry,
+                    containerAlignment: Alignment.bottomRight,
+                  ),
+                  BigButton(
+                    text: 'Add server',
+                    fontSize: 15,
+                    onPressed: createButtonPressed,
+                    containerAlignment: Alignment.bottomRight,
+                  ),
+                ],
               ),
               const SizedBox(
                 height: 20,

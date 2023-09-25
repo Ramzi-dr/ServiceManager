@@ -92,7 +92,7 @@ class CircularMenuWidget extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                             const  Text(
+                              const Text(
                                   'Please enter the text exactly as displayed to confirm',
                                   style: TextStyle(color: Colors.red)),
                             ],
@@ -133,8 +133,7 @@ class CircularMenuWidget extends StatelessWidget {
                 Navigator.pushNamed(context, AddRemoteServer.id);
               },
               icon: const Tooltip(
-                  message: 'config remote server',
-                  child: Icon(Icons.computer))),
+                  message: 'configure server', child: Icon(Icons.computer))),
 
           IconButton(
               onPressed: () {

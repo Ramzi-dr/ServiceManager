@@ -96,6 +96,9 @@ class _CreateServiceStopStarterState extends State<CreateServiceStopStarter> {
         serviceName.isNotEmpty &&
         serverList.isNotEmpty) {
       await DataBase().updateServiceList(checkedServiceList, serviceName);
+      notifcation('The service  has been created', context);
+      serviceNameController.clear();
+      checkedServiceList.clear();
     }
   }
 
@@ -104,12 +107,17 @@ class _CreateServiceStopStarterState extends State<CreateServiceStopStarter> {
     return Scaffold(
       backgroundColor: Style.backGroundColor,
       floatingActionButton: IconButton(
-          highlightColor: const Color.fromRGBO(184, 180, 173, 0.6),
-          onPressed: () {
-            serviceNameController.clear();
-            Navigator.pushNamed(context, HomePage.id);
-          },
-          icon: const Icon(Icons.cancel)),
+        iconSize: 50,
+        hoverColor: Colors.blue,
+        onPressed: () {
+          serviceNameController.clear();
+
+          Navigator.pushNamed(context, HomePage.id);
+        },
+        icon: const Icon(
+          Icons.home,
+        ),
+      ),
       appBar: AppBar(
         centerTitle: true,
         automaticallyImplyLeading: false,
@@ -130,6 +138,7 @@ class _CreateServiceStopStarterState extends State<CreateServiceStopStarter> {
                 child: Container(
                   color: const Color.fromARGB(85, 24, 184, 233),
                   child: TextField(
+                    cursorColor: const Color.fromARGB(255, 1, 36, 53),
                     controller: serviceNameController,
                     focusNode: focusNodeServiceName,
                     textAlign: TextAlign.center,
@@ -181,6 +190,7 @@ class _CreateServiceStopStarterState extends State<CreateServiceStopStarter> {
             ),
           ),
           Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Divider(
                 thickness: 2.0,
@@ -189,19 +199,42 @@ class _CreateServiceStopStarterState extends State<CreateServiceStopStarter> {
               const SizedBox(
                 height: 30,
               ),
-              const Text(
-                  'Make sure the service has already been built and tested!'),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  BigButton(
+                    text: 'Cancel',
+                    fontSize: 15,
+                    onPressed: () {
+                      serviceNameController.clear();
+                      Navigator.pushNamed(context, CreateServiceStopStarter.id);
+                    },
+                    containerAlignment: Alignment.bottomRight,
+                  ),
+                  BigButton(
+                    text: 'Create',
+                    fontSize: 15,
+                    onPressed: createButtonPressed,
+                    containerAlignment: Alignment.bottomRight,
+                  ),
+                ],
+              ),
               const SizedBox(
                 height: 20,
               ),
-              BigButton(
-                text: 'Create',
-                fontSize: 15,
-                onPressed: createButtonPressed,
-                containerAlignment: Alignment.bottomRight,
+              const Center(
+                child: Text(
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  'MAKE SURE THE SERVICE HAS ALREADY BEEN BUILT AND TESTED!',
+                  style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Color.fromARGB(255, 78, 47, 40)),
+                ),
               ),
               const SizedBox(
-                height: 20,
+                height: 40,
               ),
             ],
           ),

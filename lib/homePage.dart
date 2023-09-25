@@ -22,7 +22,7 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: Style.backGroundColor,
       appBar: AppBar(
         leading: IconButton(
-          icon:const Icon(Icons.refresh),
+          icon: const Icon(Icons.refresh),
           onPressed: () {
             Navigator.pushReplacementNamed(context, HomePage.id);
           },
@@ -31,7 +31,7 @@ class _HomePageState extends State<HomePage> {
         automaticallyImplyLeading: false,
         centerTitle: true,
         title: const Text(
-          'Services Manager',
+          'Service_Manager',
         ),
       ),
       body: GestureDetector(
@@ -47,9 +47,7 @@ class _HomePageState extends State<HomePage> {
                   style: ElevatedButton.styleFrom(
                       backgroundColor: Style.lightButtonBackgroundColor),
                   child: const Text('   Befehl   '),
-                  onPressed: () async {
-                
-                  },
+                  onPressed: () async {},
                 ),
                 title: ElevatedButton(
                   style: ElevatedButton.styleFrom(
@@ -58,17 +56,13 @@ class _HomePageState extends State<HomePage> {
                     padding: EdgeInsets.only(left: 15.0),
                     child: Text('Dienst'),
                   ),
-                  onPressed: () {
-                    
-                  },
+                  onPressed: () {},
                 ),
                 trailing: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                       backgroundColor: Style.lightButtonBackgroundColor),
                   child: const Text('  Status  '),
-                  onPressed: () {
-                    
-                  },
+                  onPressed: () {},
                 ),
               ),
             ),
